@@ -1,0 +1,21 @@
+{
+  "name": "sync-response",
+  "version": "1.0.0",
+  "description": "async response to sync",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mattf",
+  "license": "ISC",
+  "dependencies": {
+    "config": "^3.2.5",
+    "ioredis": "^4.14.1"
+  },
+  "devDependencies": {
+    "@types/config": "0.0.36",
+    "@types/ioredis": "^4.14.4",
+    "@types/mocha": "^5.2.7",
+    "mocha": "^7.0.0"
+  }
+}
