@@ -1,6 +1,10 @@
 
 
-const { SyncContext, SyncResponseClient } = require('../index');
+const {
+    RequestMessage,
+    ResponseMessage,
+    SyncContext,
+    SyncResponseClient } = require('../index');
 
 describe('index', function () {
 
@@ -14,18 +18,17 @@ describe('index', function () {
             cfg.get('sync_response_client.redis'),
             async (channel, message) => {
                 // console.log(message);
-                let ctx = SyncContext.fromRequestMessage(message);
-                ctx.responseText = JSON.stringify({code: 0});
-                await client.publish(response_channel, ctx.toResponseMessage());
+                let reqMsg = RequestMessage.fromMessageString(message);
+                await client.publish(response_channel, new ResponseMessage(reqMsg.requestId, JSON.stringify({code: 0})).toMessageString());
             });
 
         let start = Date.now();
         let timeoutCount = 0;
         let count = 0;
-        for (let i = 0; i < 1000; i++) {
-             await require('util').promisify(setTimeout)(5);
+        for (let i = 0; i < 100000; i++) {
+             await require('util').promisify(setTimeout)(20);
              client.resp(
-                new SyncContext((861111111000001 + i).toString(), Date.now().toString(), JSON.stringify({
+                new RequestMessage((861111111000001 + i).toString() + Date.now().toString(), JSON.stringify({
                     a: i,
                     b: Buffer.from('134567891234567890134567891234567890134567891234567890134567891234567890134567891234567890134567891234567890134567891234567890134567891234567890').toString('hex')})),
                 10000).then((ctx) => {
