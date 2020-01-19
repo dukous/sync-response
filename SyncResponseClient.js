@@ -79,6 +79,7 @@ class SyncResponseClient {
             cache.set(reqMsg.requestId, true);
             emitter.once(reqMsg.requestId, function (responseText) {
                 if (cache.get(reqMsg.requestId)) {
+                    cache.delete(reqMsg.requestId);
                     resolve(new ResponseMessage(reqMsg.requestId, responseText, (Date.now() - start)));
                 }
             });

@@ -34,7 +34,7 @@ describe('index', function () {
                     new RequestMessage((861111111000001 + i).toString() + Date.now().toString(), JSON.stringify({
                         a: i,
                         b: Buffer.from('hello').toString('hex')})),
-                    10000).then((respMsg) => {
+                    1000).then((respMsg) => {
                     count += 1;
                     if (respMsg.responseText === 'TIMEOUT') {
                         timeout += 1;
@@ -48,7 +48,7 @@ describe('index', function () {
             }, i * 5);
         }
         await sleep(10, 1000000, () => { return count >= totalCount; });
-        console.log('end');
+        await sleep(5000);
         client.dispose();
 
     }).timeout(6000000);
