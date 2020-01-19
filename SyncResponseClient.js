@@ -4,7 +4,18 @@ const EventEmitter = require('events');
 let cache = new Map();
 let emitter = new EventEmitter();
 
-
+/**
+ *
+ * @param {number} ms
+ * @return {Promise<void>}
+ */
+async function sleep(ms) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve()
+        }, ms);
+    })
+}
 
 class SyncResponseClient {
 
@@ -78,19 +89,21 @@ class SyncResponseClient {
      */
     async resp(reqMsg, timeout= 60000) {
         return new Promise( async resolve => {
+            let start = Date.now();
             setTimeout(() => {
                 resolve(new ResponseMessage(reqMsg.requestId, 'TIMEOUT', timeout));
                 cache.delete(reqMsg.requestId);
             }, timeout);
 
             if (this.sub_count < 2) {
-                await require('util').promisify(setTimeout)(50);
+                for (let i = 0; i < 20; i++) {
+                    await sleep(5);
+                    if (this.sub_count >= 2) break;
+                }
                 if (this.sub_count < 2) {
                     resolve(new ResponseMessage(reqMsg.requestId, 'WAITING'));
                 }
             }
-
-            let start = Date.now();
             cache.set(reqMsg.requestId, true);
             emitter.once(reqMsg.requestId, function (responseText) {
                 if (cache.get(reqMsg.requestId)) {
