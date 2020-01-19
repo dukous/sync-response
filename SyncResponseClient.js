@@ -4,19 +4,6 @@ const EventEmitter = require('events');
 let cache = new Map();
 let emitter = new EventEmitter();
 
-/**
- *
- * @param {number} ms
- * @return {Promise<void>}
- */
-async function sleep(ms) {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve()
-        }, ms);
-    })
-}
-
 class SyncResponseClient {
 
     /**
@@ -34,14 +21,9 @@ class SyncResponseClient {
      * @param {request_handler} request_handler - 请求处理器
      */
     constructor(request_channel, response_channel, redisOptions, request_handler) {
+        this.ready = false;
         this.request_channel = request_channel;
         this.response_channel = response_channel;
-
-        /**
-         * 订阅计数
-         * @type {number}
-         */
-        this.sub_count = 0;
 
         /**
          * 发布客户端
@@ -56,8 +38,7 @@ class SyncResponseClient {
         this.request_sub_client = new IORedis(redisOptions);
         this.request_sub_client
             .subscribe(this.request_channel)
-            .then(()=>{
-                this.sub_count++;
+            .then(() => {
                 this.request_sub_client.on('message', (channel, message) => {
                     if (channel === this.request_channel) {
                         request_handler(channel, message);
@@ -69,7 +50,7 @@ class SyncResponseClient {
         this.response_sub_client
             .subscribe(this.response_channel)
             .then(() => {
-                this.sub_count++;
+                this.ready = true;
                 this.response_sub_client.on('message', async (channel, message) => {
                     if (channel === this.response_channel) {
                         let respMsg = ResponseMessage.fromMessageString(message);
@@ -90,29 +71,21 @@ class SyncResponseClient {
     async resp(reqMsg, timeout= 60000) {
         return new Promise( async resolve => {
             let start = Date.now();
-            setTimeout(() => {
-                resolve(new ResponseMessage(reqMsg.requestId, 'TIMEOUT', timeout));
-                cache.delete(reqMsg.requestId);
-            }, timeout);
-
-            if (this.sub_count < 2) {
-                for (let i = 0; i < 20; i++) {
-                    await sleep(5);
-                    if (this.sub_count >= 2) break;
-                }
-                if (this.sub_count < 2) {
-                    resolve(new ResponseMessage(reqMsg.requestId, 'WAITING'));
-                }
+            if (!this.ready) {
+                await sleep(10, 100, ()=> {
+                    return this.ready;
+                });
             }
             cache.set(reqMsg.requestId, true);
             emitter.once(reqMsg.requestId, function (responseText) {
                 if (cache.get(reqMsg.requestId)) {
-                    let respMsg = new ResponseMessage(reqMsg.requestId, responseText, (Date.now() - start));
-                    resolve(respMsg);
-                    cache.delete(respMsg.requestId);
+                    resolve(new ResponseMessage(reqMsg.requestId, responseText, (Date.now() - start)));
                 }
             });
             this.publish(this.request_channel, reqMsg.toMessageString());
+            await sleep(timeout);
+            cache.delete(reqMsg.requestId);
+            resolve(new ResponseMessage(reqMsg.requestId, 'TIMEOUT', timeout));
         });
     }
 
@@ -134,17 +107,26 @@ class SyncResponseClient {
             this.publish_client = null;
         }
         if (this.request_sub_client) {
-            this.request_sub_client.disconnect();
-            this.request_sub_client = null;
+            this.request_sub_client
+                .unsubscribe(this.request_channel)
+                .then(() => {
+                    this.request_sub_client.disconnect();
+                    this.request_sub_client = null;
+                });
         }
         if (this.response_sub_client) {
-            this.response_sub_client.disconnect();
-            this.response_sub_client = null;
+            this.response_sub_client
+                .unsubscribe(this.response_channel)
+                .then(() => {
+                    this.response_sub_client.disconnect();
+                    this.response_sub_client = null;
+                });
         }
     }
 }
 
 module.exports = SyncResponseClient;
 
+const sleep = require('./sleep');
 const RequestMessage = require('./RequestMessage');
 const ResponseMessage = require('./ResponseMessage');

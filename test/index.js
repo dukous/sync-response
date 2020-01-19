@@ -1,6 +1,7 @@
 
 
 const {
+    sleep,
     RequestMessage,
     ResponseMessage,
     SyncResponseClient } = require('../index');
@@ -18,36 +19,36 @@ describe('index', function () {
             async (channel, message) => {
                 // console.log(message);
                 let reqMsg = RequestMessage.fromMessageString(message);
-                await client.publish(response_channel, new ResponseMessage(reqMsg.requestId, JSON.stringify({code: 0})).toMessageString());
+                await client.publish(response_channel, new ResponseMessage(reqMsg.requestId, JSON.stringify({code: 0, message: Date.now().toString(16)})).toMessageString());
             });
 
-        let total = 10000;
-        let timeoutCount = 0;
+        let totalCount = 10000;
+        let timeout = 0;
         let count = 0;
-        for (let i = 0; i < total; i++) {
-             setTimeout(() => {
-                 client.resp(
-                     new RequestMessage((861111111000001 + i).toString() + Date.now().toString(), JSON.stringify({
-                         a: i,
-                         b: Buffer.from('134567891234567890134567891234567890134567891234567890134567891234567890134567891234567890134567891234567890134567891234567890134567891234567890').toString('hex')})),
-                     10000).then((ctx) => {
-                     count += 1;
-                     if (ctx.responseText === 'TIMEOUT') {
-                         timeoutCount += 1;
-                     }
-                     console.log(i + 1, count, timeoutCount, JSON.stringify(ctx));
-                 });
-             }, (i + 1) * 20);
+        let total = 0;
+        let max = 0;
+        let min = 99999;
+        for (let i = 0; i < totalCount; i++) {
+            setTimeout( () => {
+                client.resp(
+                    new RequestMessage((861111111000001 + i).toString() + Date.now().toString(), JSON.stringify({
+                        a: i,
+                        b: Buffer.from('hello').toString('hex')})),
+                    10000).then((respMsg) => {
+                    count += 1;
+                    if (respMsg.responseText === 'TIMEOUT') {
+                        timeout += 1;
+                    } else {
+                        total += respMsg.responseTime;
+                        max = max > respMsg.responseTime ? max : respMsg.responseTime;
+                        min = min < respMsg.responseTime ? min : respMsg.responseTime;
+                    }
+                    console.log(i + 1, count, JSON.stringify({ timeout, max, min, avg: (total / count).toFixed(2) }), respMsg.responseTime, respMsg.responseText);
+                });
+            }, i * 5);
         }
-
-        for (let i = 0; i < 100000; i++) {
-            if (count < total) {
-                await require('util').promisify(setTimeout)(10);
-            } else {
-                break;
-            }
-        }
-
+        await sleep(10, 1000000, () => { return count >= totalCount; });
+        console.log('end');
         client.dispose();
 
     }).timeout(6000000);
