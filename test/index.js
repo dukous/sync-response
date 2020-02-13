@@ -31,24 +31,25 @@ describe('index', function () {
         for (let i = 0; i < totalCount; i++) {
             setTimeout( () => {
                 client.resp(
-                    new RequestMessage((861111111000001 + i).toString() + Date.now().toString(), JSON.stringify({
-                        a: i,
-                        b: Buffer.from('hello').toString('hex')})),
-                    1000).then((respMsg) => {
-                    count += 1;
-                    if (respMsg.responseText === 'TIMEOUT') {
-                        timeout += 1;
-                    } else {
-                        total += respMsg.responseTime;
-                        max = max > respMsg.responseTime ? max : respMsg.responseTime;
-                        min = min < respMsg.responseTime ? min : respMsg.responseTime;
-                    }
-                    console.log(i + 1, count, JSON.stringify({ timeout, max, min, avg: (total / count).toFixed(2) }), respMsg.responseTime, respMsg.responseText);
-                });
+                    new RequestMessage((861111111000001 + i).toString() + Date.now().toString(),
+                        JSON.stringify({
+                            a: i,
+                            b: Buffer.from('hello').toString('hex')})),1000)
+                    .then((respMsg) => {
+                        count += 1;
+                        if (respMsg.responseText === 'TIMEOUT') {
+                            timeout += 1;
+                        } else {
+                            total += respMsg.responseTime;
+                            max = max > respMsg.responseTime ? max : respMsg.responseTime;
+                            min = min < respMsg.responseTime ? min : respMsg.responseTime;
+                        }
+                        console.log(i + 1, count, JSON.stringify({ timeout, max, min, avg: (total / count).toFixed(2) }), respMsg.responseTime, respMsg.responseText);
+                    });
             }, i * 5);
         }
         await sleep(10, 1000000, () => { return count >= totalCount; });
-        await sleep(5000);
+        await sleep(1000);
         client.dispose();
 
     }).timeout(6000000);

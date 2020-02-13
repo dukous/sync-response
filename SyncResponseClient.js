@@ -21,7 +21,6 @@ class SyncResponseClient {
      * @param {request_handler} request_handler - 请求处理器
      */
     constructor(request_channel, response_channel, redisOptions, request_handler) {
-        this.ready = false;
         this.request_channel = request_channel;
         this.response_channel = response_channel;
 
@@ -32,6 +31,11 @@ class SyncResponseClient {
         this.publish_client = new IORedis(redisOptions);
 
         /**
+         * @private
+         * @type {boolean}
+         */
+        this.request_sub_client_ready = false;
+        /**
          * 请求订阅客户端
          * @type {IORedis.Redis}
          */
@@ -39,6 +43,7 @@ class SyncResponseClient {
         this.request_sub_client
             .subscribe(this.request_channel)
             .then(() => {
+                this.request_sub_client_ready = true;
                 this.request_sub_client.on('message', (channel, message) => {
                     if (channel === this.request_channel) {
                         request_handler(channel, message);
@@ -46,11 +51,16 @@ class SyncResponseClient {
                 });
             });
 
+        /**
+         * @private
+         * @type {boolean}
+         */
+        this.response_sub_client_ready = false;
         this.response_sub_client = new IORedis(redisOptions);
         this.response_sub_client
             .subscribe(this.response_channel)
             .then(() => {
-                this.ready = true;
+                this.response_sub_client_ready = true;
                 this.response_sub_client.on('message', async (channel, message) => {
                     if (channel === this.response_channel) {
                         let respMsg = ResponseMessage.fromMessageString(message);
@@ -60,6 +70,10 @@ class SyncResponseClient {
                     }
                 });
             });
+    }
+
+    get ready() {
+        return this.request_sub_client_ready && this.response_sub_client_ready;
     }
 
     /**
@@ -108,6 +122,7 @@ class SyncResponseClient {
             this.publish_client = null;
         }
         if (this.request_sub_client) {
+            this.request_sub_client_ready = false;
             this.request_sub_client
                 .unsubscribe(this.request_channel)
                 .then(() => {
@@ -116,6 +131,7 @@ class SyncResponseClient {
                 });
         }
         if (this.response_sub_client) {
+            this.response_sub_client_ready = false;
             this.response_sub_client
                 .unsubscribe(this.response_channel)
                 .then(() => {
