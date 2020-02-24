@@ -6,10 +6,10 @@
  */
 
 /**
- *
- * @param {number} ms
- * @param {number} [count]
- * @param {break_cb} [break_cb]
+ * 睡眠
+ * @param {number} ms - 时长(毫秒)
+ * @param {number} [count] - 执行次数
+ * @param {break_cb} [break_cb] - 跳出回调
  * @return {Promise<void>}
  */
 async function sleep(ms, count=1, break_cb = () => { return true }) {

@@ -1,10 +1,12 @@
-
+/**
+ * 响应消息
+ */
 class ResponseMessage {
     /**
      *
-     * @param requestId
-     * @param responseText
-     * @param {number} [responseTime=0]
+     * @param {string} requestId - 请求ID
+     * @param {string} responseText - 响应文本
+     * @param {number} [responseTime=0] - 响应时长(毫秒)
      */
     constructor(requestId, responseText, responseTime) {
         this.requestId = requestId;
@@ -12,13 +14,17 @@ class ResponseMessage {
         this.responseTime = responseTime ? responseTime : 0;
     }
 
+    /**
+     * 消息字符串[requestId,responseText]
+     * @return {string}
+     */
     toMessageString() {
         return JSON.stringify([this.requestId, this.responseText]);
     }
 
     /**
      *
-     * @param message
+     * @param {string} message
      * @return {ResponseMessage}
      */
     static fromMessageString(message) {

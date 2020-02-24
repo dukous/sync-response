@@ -4,6 +4,9 @@ const EventEmitter = require('events');
 let cache = new Map();
 let emitter = new EventEmitter();
 
+/**
+ * 同步响应客户端
+ */
 class SyncResponseClient {
 
     /**
@@ -72,12 +75,16 @@ class SyncResponseClient {
             });
     }
 
+    /**
+     * 是否已准备好
+     * @return {boolean}
+     */
     get ready() {
         return this.request_sub_client_ready && this.response_sub_client_ready;
     }
 
     /**
-     *
+     * 响应
      * @param {RequestMessage} reqMsg - 上下文
      * @param {number} [timeout=60000] - 超时时间（毫秒）
      * @return {Promise<ResponseMessage>}
@@ -105,9 +112,9 @@ class SyncResponseClient {
     }
 
     /**
-     *
-     * @param {string} channel
-     * @param {string} message
+     * 发布消息
+     * @param {string} channel - 通道
+     * @param {string} message - 消息
      */
     publish(channel, message) {
         this.publish_client.publish(channel, message);
