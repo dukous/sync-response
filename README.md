@@ -1,5 +1,5 @@
+```javascript
 const cfg = require('config');
-
 let request_channel = Date.now().toString() + '_req';
 let response_channel = Date.now().toString() + '_resp';
 let client = new SyncResponseClient(request_channel,
@@ -17,3 +17,4 @@ client.resp(
     .then((respMsg) => {
         console.log(respMsg);
     });
+```
