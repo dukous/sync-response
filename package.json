@@ -1,6 +1,6 @@
 {
   "name": "sync-response",
-  "version": "1.0.6",
+  "version": "1.1.8",
   "description": "async response to sync",
   "main": "./dist/index.js",
   "types": "./dist/@types/index.d.ts",

@@ -112,8 +112,8 @@ export class SyncResponseClient {
      * @param {number} [timeout=60000] - 超时时长（毫秒）
      * @return {Promise<ResponseMessage>}
      */
-    async resp(reqMsg: RequestMessage, timeout: number = 60000) {
-        return new Promise( async resolve => {
+    async resp(reqMsg: RequestMessage, timeout: number = 60000) : Promise<ResponseMessage> {
+        return new Promise<ResponseMessage>( async resolve => {
             let start = Date.now();
             if (!this.ready) {
                 await sleep(10, 100, () => {
