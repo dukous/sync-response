@@ -1,9 +1,12 @@
-
 /**
  * 请求处理器
  * @callback break_cb
  * @return {boolean}
  */
+
+interface break_cb {
+    ():boolean
+}
 
 /**
  * 睡眠
@@ -12,7 +15,7 @@
  * @param {break_cb} [break_cb] - 跳出回调
  * @return {Promise<void>}
  */
-async function sleep(ms, count=1, break_cb = () => { return true }) {
+async function sleep(ms: number, count: number = 1, break_cb = () => true) {
     return new Promise(resolve => {
         setTimeout(async () => {
             if (break_cb()) {
@@ -28,4 +31,6 @@ async function sleep(ms, count=1, break_cb = () => { return true }) {
     })
 }
 
-module.exports = sleep;
+export {
+    sleep
+};

@@ -4,7 +4,7 @@ const {
     sleep,
     RequestMessage,
     ResponseMessage,
-    SyncResponseClient } = require('../index');
+    SyncResponseClient } = require('../dist/index');
 
 describe('index', function () {
 
@@ -22,7 +22,7 @@ describe('index', function () {
                 await client.publish(response_channel, new ResponseMessage(reqMsg.requestId, JSON.stringify({code: 0, message: Date.now().toString(16)})).toMessageString());
             });
 
-        let totalCount = 10000;
+        let totalCount = 1000;
         let timeout = 0;
         let count = 0;
         let total = 0;
@@ -55,3 +55,7 @@ describe('index', function () {
     }).timeout(6000000);
 
 });
+
+/*
+npm publish --registry=https://registry.npmjs.org
+ */

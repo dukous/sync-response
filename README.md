@@ -7,7 +7,9 @@ let client = new SyncResponseClient(request_channel,
     cfg.get('sync_response_client.redis'),
     async (channel, message) => {
         let reqMsg = RequestMessage.fromMessageString(message);
-        await client.publish(response_channel, new ResponseMessage(reqMsg.requestId, JSON.stringify({code: 0, message: Date.now().toString(16)})).toMessageString());
+        await client.publish(response_channel, 
+            new ResponseMessage(reqMsg.requestId, 
+            JSON.stringify({code: 0, message: Date.now().toString(16)})).toMessageString());
     });
 client.resp(
     new RequestMessage('861111111000001' + Date.now().toString(),
