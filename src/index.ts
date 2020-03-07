@@ -1,12 +1,5 @@
 
-import {sleep} from './sleep';
-import {RequestMessage} from './RequestMessage';
-import {ResponseMessage} from './ResponseMessage';
-import {SyncResponseClient} from './SyncResponseClient';
-
-export  {
-    sleep,
-    RequestMessage,
-    ResponseMessage,
-    SyncResponseClient
-};
+export * from './sleep';
+export * from './RequestMessage';
+export * from './ResponseMessage';
+export * from './SyncResponseClient';
