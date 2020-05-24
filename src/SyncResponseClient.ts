@@ -1,6 +1,6 @@
 
 const IORedis = require('ioredis');
-const EventEmitter = require('events');
+const {EventEmitter} = require('events');
 
 let cache = new Map();
 let emitter = new EventEmitter();
@@ -130,6 +130,7 @@ export class SyncResponseClient {
             this.publish(this.request_channel, reqMsg.toMessageString());
             await sleep(timeout);
             cache.delete(reqMsg.requestId);
+            emitter.removeAllListeners(reqMsg.requestId);
             resolve(new ResponseMessage(reqMsg.requestId, 'TIMEOUT', timeout));
         });
     }
